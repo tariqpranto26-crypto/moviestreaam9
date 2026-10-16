@@ -1,0 +1,51 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=overlays-content"><meta name="theme-color" content="#15171c"><meta name="color-scheme" content="dark"><title>Watch | MovieStream</title><link rel="stylesheet" href="css/styles.css"></head><body>
+<main id="main-content"><div class="container" id="wrap"></div></main>
+<script src="js/data.js"></script><script src="js/app.js"></script>
+<script>
+mountChrome("");
+const qs=new URLSearchParams(location.search);const t=byId(qs.get("id")||1);
+document.title=`Watch ${t.title} | MovieStream`;
+const langs=["English","Espa\u00f1ol","Fran\u00e7ais","Deutsch","Italiano","Portugu\u00eas","\u0627\u0644\u0639\u0631\u0628\u064a\u0629","T\u00fcrk\u00e7e","\u0420\u0443\u0441\u0441\u043a\u0438\u0439","\u65e5\u672c\u8a9e","\ud55c\uad6d\uc5b4","\u4e2d\u6587","\u0939\u093f\u0928\u094d\u0926\u0940","Nederlands","Polski"];
+const prefs=Object.assign({autoNext:true,showTitle:true,showPoster:true,chromecast:false,sub:"English",mode:"Direct"},store("prefs")||{});
+function tog(key,label,desc){return `<div class="pref-row"><div><b>${label}</b><div class="d">${desc}</div></div><div class="toggle" role="group" aria-label="${label}"><button data-k="${key}" data-v="1" aria-pressed="${prefs[key]===true}">On</button><button data-k="${key}" data-v="0" aria-pressed="${prefs[key]===false}">Off</button></div></div>`;}
+document.getElementById("wrap").innerHTML=`
+<div class="player" id="player"><img class="posterbg" id="pbg" src="${poster(t)}" alt="" ${prefs.showPoster?"":"hidden"}><p id="pl-msg">Loading player\u2026</p><button class="big" id="play" aria-label="Play">\u25B6</button>${prefs.showTitle?`<p id="pl-title">${t.title} (${t.year})</p>`:""}</div>
+<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px">
+<div class="seg" role="group" aria-label="Player source"><button data-mode="Direct" aria-pressed="${prefs.mode==="Direct"}">Direct</button><button data-mode="Embed" aria-pressed="${prefs.mode==="Embed"}">Embed</button></div>
+<span class="helper">If a title or subtitles are missing, try the other player. Subtitle, title and poster settings apply to Direct mode.</span></div>
+<div id="share-w"></div>
+<h1 class="detail-title">${t.title}</h1><p class="syn">${t.overview}</p>
+<dl class="facts"><div><dt>Genres</dt><dd>${t.genres.join(", ")}</dd></div><div><dt>Cast</dt><dd>${t.cast.slice(0,6).join(", ")} <a href="detail.html?id=${t.id}">and more\u2026</a></dd></div>
+<div><dt>Director</dt><dd>${t.director}</dd></div><div><dt>Country</dt><dd>${t.country}</dd></div>
+<div><dt>Duration</dt><dd>${t.type==="Movie"?"2h 25m":"45m / episode"}</dd></div><div><dt>Rated</dt><dd>${t.cert}</dd></div><div><dt>Release year</dt><dd>${t.year}</dd></div><div><dt>Rating</dt><dd>\u2605 ${(t.rating??"\u2013")}</dd></div></dl>
+<div id="ep-picker"></div>
+<div class="pref-panel" aria-label="Player preferences">
+${tog("autoNext","Automatic next episode","Play the next episode when this one ends.")}
+${tog("showTitle","Show title in player","Overlay the title when playback starts.")}
+${tog("showPoster","Show poster in player","Show poster art before playback.")}
+${tog("chromecast","Chromecast button","Show the cast button in the player.")}
+<div class="pref-row"><div><b>Subtitle language</b><div class="d">Language when a stream starts.</div></div><select id="sub" aria-label="Subtitle language">${langs.map(l=>`<option ${prefs.sub===l?"selected":""}>${l}</option>`).join("")}</select></div>
+</div>
+<section class="comments" aria-labelledby="c-h"><h2 id="c-h">Comments (<span id="c-n">0</span>)</h2>
+<p class="helper">Keep it about the title. Hate speech and links aren\u2019t allowed.</p>
+<textarea id="c-text" maxlength="500" aria-label="Write a comment"></textarea>
+<div style="display:flex;justify-content:space-between;align-items:center"><small id="c-count" style="color:var(--text-faint)">0 / 500</small><button class="btn btn-secondary" id="c-post">Sign in to post</button></div>
+<div id="c-list"></div><p class="helper" id="c-load">Loading comments\u2026</p></section>
+<section class="block" aria-labelledby="ml"><div class="rail-head"><div><h2 id="ml">More like this</h2></div><a class="link-more" href="similar.html?id=${t.id}">View more</a></div>
+<div class="rail"><button class="rail-arrow left" aria-label="Scroll back" data-rail="ml" data-dir="-1">‹</button><div class="rail-scroller" id="rail-ml">${similarTo(t,20).map(x=>cardHTML(x)).join("")}</div><button class="rail-arrow right" aria-label="Scroll forward" data-rail="ml" data-dir="1">›</button></div></section>`;
+wireRails();
+document.getElementById("share-w").innerHTML=shareHTML(1282);
+document.getElementById("play").onclick=()=>{document.getElementById("pl-msg").textContent="Playing ("+prefs.mode+" source) — trailer slot. Wire licensed sources here.";let h=store("history")||[];store("history",[{id:t.id,title:t.title,at:Date.now()},...h.filter(x=>x.id!==t.id)].slice(0,24));let c=store("continue")||{};c[t.id]={at:Date.now(),pos:"12:04"};store("continue",c);};
+document.querySelectorAll(".seg button").forEach(b=>b.onclick=()=>{prefs.mode=b.dataset.mode;store("prefs",prefs);document.querySelectorAll(".seg button").forEach(x=>x.setAttribute("aria-pressed",x===b));});
+document.querySelectorAll(".toggle button").forEach(b=>b.onclick=()=>{prefs[b.dataset.k]=b.dataset.v==="1";store("prefs",prefs);b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));if(b.dataset.k==="showPoster")document.getElementById("pbg").hidden=!prefs.showPoster;});
+document.getElementById("sub").onchange=e=>{prefs.sub=e.target.value;store("prefs",prefs);};
+if(t.type==="TV"){document.getElementById("ep-picker").innerHTML=`<h2 style="font-size:1.1rem">Episodes</h2><label>Season <select><option>Season 1</option><option>Season 2</option></select></label><div class="ep-list">${Array.from({length:6},(_,i)=>`<a class="ep" href="watch.html?id=${t.id}&ep=${i+1}"><img src="${backdrop(t,300)}" alt="" loading="lazy"><span><span class="t">E${i+1} — The turn</span><br><span class="d">45m — a quiet fallout forces a choice.</span><span class="bar"><i style="width:${i===0?"35":"0"}%"></i></span></span></a>`).join("")}</div>`;}
+// comments (local only)
+const ck="comments-"+t.id;let comments=store(ck)||[];
+const ta=document.getElementById("c-text");
+ta.addEventListener("input",()=>document.getElementById("c-count").textContent=ta.value.length+" / 500");
+function renderC(){document.getElementById("c-n").textContent=comments.length;document.getElementById("c-load").style.display="none";document.getElementById("c-list").innerHTML=comments.map(c=>`<div class="panel"><b>${c.u}</b> <small style="color:var(--text-faint)">${new Date(c.at).toLocaleDateString()}</small><p>${c.text.replace(/</g,"&lt;")}</p></div>`).join("");}
+setTimeout(renderC,600);
+document.getElementById("c-post").onclick=()=>{const u=store("user");if(!u){showModal(true);return;}if(!ta.value.trim())return;comments=[{u:u.email.split("@")[0],text:ta.value.slice(0,500),at:Date.now()},...comments];store(ck,comments);ta.value="";document.getElementById("c-count").textContent="0 / 500";renderC();};
+if(store("user"))document.getElementById("c-post").textContent="Post comment";
+</script></body></html>

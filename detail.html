@@ -1,0 +1,38 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=overlays-content"><meta name="theme-color" content="#15171c"><meta name="color-scheme" content="dark"><title>Detail | MovieStream</title><link rel="stylesheet" href="css/styles.css"></head><body>
+<main id="main-content"><div class="container" id="wrap"></div></main>
+<script src="js/data.js"></script><script src="js/app.js"></script>
+<script>
+mountChrome("");
+const t=byId(new URLSearchParams(location.search).get("id")||1);
+document.title=`${t.title} (${t.year}) | MovieStream`;
+const m=metaLine(t);const saved=inList(t.id);
+document.getElementById("wrap").innerHTML=`
+<div class="backdrop" id="bd"><img src="${backdrop(t)}" alt="" fetchpriority="high"><div class="bd-actions"><button class="btn btn-primary btn-sm" id="trailer-btn">Watch now</button></div></div>
+<div class="trailer-box" id="trailer-box"></div>
+<h1 class="detail-title">${t.title}</h1>
+<div class="action-row"><a class="btn btn-primary" href="watch.html?id=${t.id}">\u25B6 Play</a>
+<button class="btn btn-secondary" id="save-btn">${saved?"Saved \u2713":"Save to list"}</button>
+<span class="like-pill">\u2665 ${(t.pop%900)+12}</span></div>
+<div class="meta-row"><span>\u2605 ${m.r}</span><span>${m.y}</span><span>${t.type==="Movie"?t.cast.length*12+85+"m":t.seasons+" Season"+(t.seasons>1?"s":"")}</span><span>${t.cert}</span></div>
+<p class="syn">${t.overview}</p>
+<dl class="facts"><div><dt>Cast</dt><dd id="cast">${t.cast.slice(0,12).map(n=>`<a href="person.html?name=${encodeURIComponent(n)}">${n}</a>`).join(", ")} <button class="btn btn-ghost btn-sm" id="more-cast">and more\u2026</button></dd></div>
+<div><dt>Director</dt><dd><a href="person.html?name=${encodeURIComponent(t.director)}">${t.director}</a></dd></div>
+<div><dt>Genres</dt><dd>${t.genres.map(g=>`<a href="genre.html?genre=${encodeURIComponent(g)}">${g}</a>`).join(", ")}</dd></div>
+<div><dt>Country</dt><dd>${t.country}</dd></div></dl>
+<div id="eps"></div>
+<section class="block" aria-labelledby="ml"><div class="rail-head"><div><h2 id="ml">More like this</h2></div><a class="link-more" href="similar.html?id=${t.id}">View more</a></div>
+<div class="rail"><button class="rail-arrow left" aria-label="Scroll back" data-rail="ml" data-dir="-1">‹</button><div class="rail-scroller" id="rail-ml">${similarTo(t,20).map(x=>cardHTML(x)).join("")}</div><button class="rail-arrow right" aria-label="Scroll forward" data-rail="ml" data-dir="1">›</button></div></section>`;
+wireRails();
+document.getElementById("save-btn").onclick=e=>{const on=toggleList(t.id);e.target.textContent=on?"Saved \u2713":"Save to list";};
+document.getElementById("trailer-btn").onclick=()=>{
+  const b=document.getElementById("trailer-box");
+  if(b.innerHTML){b.innerHTML="";document.querySelector("#bd img").style.display="";return;}
+  document.querySelector("#bd img").style.display="none";
+  b.innerHTML=`<div class="player"><p>Trailer — ${t.title}</p><button class="big" aria-label="Play trailer">\u25B6</button><button class="btn btn-secondary btn-sm" id="close-t">Close trailer</button></div>`;
+  document.getElementById("close-t").onclick=()=>{b.innerHTML="";document.querySelector("#bd img").style.display="";};};
+document.getElementById("more-cast").onclick=e=>{const full=t.cast.map(n=>`<a href="person.html?name=${encodeURIComponent(n)}">${n}</a>`).join(", ");document.getElementById("cast").innerHTML=full+` <span class="share-strip faint">(${t.cast.length} credited)</span>`;};
+if(t.type==="TV"){document.getElementById("eps").innerHTML=`<h2 style="font-size:1.25rem">Episodes</h2><label>Season <select id="seas">${Array.from({length:t.seasons},(_,i)=>`<option>Season ${i+1}</option>`).join("")}</select></label>
+<div class="ep-list">${Array.from({length:6},(_,i)=>`<a class="ep" href="watch.html?id=${t.id}&ep=${i+1}"><img src="${backdrop(t,300)}" alt="" loading="lazy"><span><span class="t">E${i+1} — The ${["Harbor","Signal","Garden","Cipher","Tide"][i%5]} returns</span><br><span class="d">A quiet fallout forces the crew to choose a side. ${22+i*3}m</span><span class="bar"><i style="width:${i<2?"100":"0"}%"></i></span></span></a>`).join("")}</div>`;}
+// history
+let h=store("history")||[];store("history",[{id:t.id,title:t.title,at:Date.now()},...h.filter(x=>x.id!==t.id)].slice(0,24));
+</script></body></html>

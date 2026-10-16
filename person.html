@@ -1,0 +1,15 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=overlays-content"><meta name="theme-color" content="#15171c"><meta name="color-scheme" content="dark"><title>Person | MovieStream</title><link rel="stylesheet" href="css/styles.css"></head><body>
+<main id="main-content"><div class="container" id="w"></div></main>
+<script src="js/data.js"></script><script src="js/app.js"></script>
+<script>mountChrome("");
+const name=new URLSearchParams(location.search).get("name")||"Ava Reyes";
+document.title=`${name} | MovieStream`;
+const films=CATALOG.filter(t=>t.cast.includes(name)||t.director===name);
+const list=films.length?films:CATALOG.slice(0,12);
+document.getElementById("w").innerHTML=`<p style="margin-top:24px"><a class="link-more" href="index.html">&larr; Back</a></p>
+<div class="person"><img src="${portrait(name)}" alt="Portrait of ${name}"><div><h1 class="page-h1" style="margin-top:0">${name}</h1>
+<p class="share-strip">Acting</p><p class="syn">Born: March 14, 1988, Los Angeles, USA</p>
+<p class="syn bio-clamp" id="bio">${name} is a screen actor known for grounded, quietly intense performances across independent film and television. Credits span drama, thriller and science fiction, with festival premieres and long-running series work. This biography is a short original summary written for MovieStream. When longer text is sourced from Wikipedia it is shown with a CC-BY-SA attribution line.</p>
+<button class="btn btn-ghost btn-sm" id="bio-btn">Read more</button><p class="share-strip">Biography summary written by MovieStream.</p></div></div>
+<section class="block"><div class="rail-head"><div><h2>Acting</h2></div></div><div class="grid">${list.map(x=>cardHTML(x)).join("")}</div></section>`;
+document.getElementById("bio-btn").onclick=e=>{document.getElementById("bio").classList.toggle("bio-clamp");e.target.textContent=document.getElementById("bio").classList.contains("bio-clamp")?"Read more":"Show less";};</script></body></html>

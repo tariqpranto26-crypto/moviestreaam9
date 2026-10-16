@@ -1,0 +1,9 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=overlays-content"><meta name="theme-color" content="#15171c"><meta name="color-scheme" content="dark"><title>TV Shows | MovieStream</title><link rel="stylesheet" href="css/styles.css"></head><body>
+<main id="main-content"><div class="container"><h1 class="page-h1">TV Shows</h1>
+<nav class="sort-tabs" aria-label="Sort"><a data-sort="popular">Popular</a><a data-sort="newest">Newest</a><a data-sort="oldest">Oldest</a><a data-sort="rating">Top rated</a></nav>
+<div class="chip-row" id="chips" role="group" aria-label="Genres"></div>
+<div class="grid" id="grid"></div><nav class="pager" id="pager" aria-label="Pagination"></nav></div></main>
+<script src="js/data.js"></script><script src="js/app.js"></script>
+<script>mountChrome("TV Shows");
+document.getElementById("chips").innerHTML=["All",...GENRES_TV].map(g=>`<a class="chip" data-genre="${g}">${g}</a>`).join("");
+runListing({filter:t=>t.type==="TV"&&!t.anime});</script></body></html>

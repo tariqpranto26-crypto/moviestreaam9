@@ -1,0 +1,30 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=overlays-content"><meta name="theme-color" content="#15171c"><meta name="color-scheme" content="dark"><title>Settings | MovieStream</title><link rel="stylesheet" href="css/styles.css"></head><body>
+<main id="main-content"><div class="container read"><p style="margin-top:24px"><a class="link-more" href="index.html">&larr; Back</a></p><h1 class="page-h1">Settings</h1><div id="s"></div></div></main>
+<script src="js/data.js"></script><script src="js/app.js"></script>
+<script>
+mountChrome("");
+const prefs=Object.assign({sub:"English",autoNext:true},store("prefs")||{});
+const u=store("user");
+document.getElementById("s").innerHTML=`
+<div class="panel"><h2>Account</h2><p>Watchlist, history, and username load on any device when you sign in with this email.</p>
+${u?`<p>Signed in as <b>${String(u.username||u.email).replace(/</g,"&lt;")} (${String(u.email).replace(/</g,"&lt;")})</b></p><button class="btn btn-secondary" id="logout">Logout</button>`:`<p style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-primary" href="login.html">Sign in</a><a class="btn btn-secondary" href="signup.html">Create account</a></p>`}
+<div class="field"><label for="uname">Username</label><input id="uname" type="text" value="${(u&&(u.username||u.email.split("@")[0]))||""}" placeholder="Shown on comments"><small>Shown on comments.</small></div></div>
+<div class="panel"><h2>Language</h2><p>How the interface talks to you.</p><select aria-label="Interface language"><option>English</option><option>Espa\u00f1ol</option><option>Fran\u00e7ais</option></select></div>
+<div class="panel"><h2>Playback</h2><p>Subtitle language, autoplay and player overlays.</p>
+<div class="field"><label for="psub">Subtitles language</label><select id="psub">${["English","Espa\u00f1ol","Fran\u00e7ais","Deutsch","Italiano","Portugu\u00eas","\u0627\u0644\u0639\u0631\u0628\u064a\u0629","T\u00fcrk\u00e7e","\u0420\u0443\u0441\u0441\u043a\u0438\u0439","\u65e5\u672c\u8a9e","\ud55c\uad6d\uc5b4","\u4e2d\u6587","\u0939\u093f\u0928\u094d\u0926\u0940","Nederlands","Polski"].map(l=>`<option ${prefs.sub===l?"selected":""}>${l}</option>`).join("")}</select><small>Language when a stream starts.</small></div>
+<div id="play-togs"></div>
+<p class="helper">These toggles also apply on the watch page.</p></div>
+<div class="panel"><h2>Add to Home Screen</h2><p>On phones: tap Share, then Add to Home Screen. On desktop: use the browser menu to install or pin MovieStream.</p></div>
+<div class="panel"><h2>Clear history</h2><p>Clears watchlist, watch history and search history on this browser.</p><button class="btn btn-secondary" id="clr">Clear history</button></div>
+<div class="panel"><h2>Delete account</h2><p>Permanently deletes your account. This cannot be undone.</p><button class="btn btn-danger" id="del">Delete account</button></div>`;
+const gs=document.getElementById("go-si");if(gs)gs.onclick=()=>showModal(true);
+const lo=document.getElementById("logout");if(lo)lo.onclick=()=>{store("user",null);location.reload();};
+const un=document.getElementById("uname");if(un)un.onchange=e=>{const u2=store("user")||{};u2.username=e.target.value.trim();store("user",u2.email?u2:null);};
+document.getElementById("clr").onclick=()=>{["watchlist","history","recent","continue"].forEach(k=>{try{localStorage.removeItem("ms-"+k);}catch(e){}});alert("History cleared on this browser.");};
+document.getElementById("del").onclick=()=>{if(confirm("Permanently delete your account?")){store("user",null);alert("Account deleted.");location.href="index.html";}};
+document.getElementById("psub").onchange=e=>{store("prefs",Object.assign(prefs,{sub:e.target.value}));};
+const togDefs=[["autoNext","Automatic next episode","Play the next episode when this one ends."],["showTitle","Show title in player","Overlay the title when playback starts."],["showPoster","Show poster in player","Show poster art before playback."],["chromecast","Chromecast button","Show the cast button in the player."]];
+const allPrefs=Object.assign({autoNext:true,showTitle:true,showPoster:true,chromecast:false},store("prefs")||{});
+document.getElementById("play-togs").innerHTML=togDefs.map(([k,l,d])=>`<div class="pref-row"><div><b>${l}</b><div class="d">${d}</div></div><div class="toggle" role="group" aria-label="${l}"><button data-k="${k}" data-v="1" aria-pressed="${allPrefs[k]===true}">On</button><button data-k="${k}" data-v="0" aria-pressed="${allPrefs[k]===false}">Off</button></div></div>`).join("");
+document.querySelectorAll("#play-togs .toggle button").forEach(b=>b.onclick=()=>{allPrefs[b.dataset.k]=b.dataset.v==="1";store("prefs",Object.assign(prefs,allPrefs));b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));});
+</script></body></html>

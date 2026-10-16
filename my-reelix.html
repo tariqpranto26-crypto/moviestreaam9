@@ -1,0 +1,12 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=overlays-content"><meta name="theme-color" content="#15171c"><meta name="color-scheme" content="dark"><title>My Reelix | MovieStream</title><link rel="stylesheet" href="css/styles.css"></head><body>
+<main id="main-content"><div class="container"><h1 class="page-h1">My Reelix</h1><div id="w"></div></div></main>
+<script src="js/data.js"></script><script src="js/app.js"></script>
+<script>mountChrome("My Reelix");
+const cont=store("continue")||{},list=getList(),hist=store("history")||[];
+const has=Object.keys(cont).length||list.length||hist.length;
+if(!has){document.getElementById("w").innerHTML=emptyBox("Press play, save a title, or like one. It shows up here.","trending.html","Browse trending");}
+else{document.getElementById("w").innerHTML=
+(Object.keys(cont).length?railHTML("cw","Continue watching","watchlist.html",Object.keys(cont).map(id=>byId(id))):"")+
+(list.length?railHTML("ml","My list","watchlist.html",list.map(id=>byId(id))):"")+
+(hist.length?railHTML("hi","History","trending.html",hist.map(h=>byId(h.id))):"")+
+railHTML("rec","Recommendations","trending.html",[...CATALOG].sort((a,b)=>b.pop-a.pop).slice(0,24));}</script></body></html>

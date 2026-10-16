@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=overlays-content">
+<meta name="theme-color" content="#15171c">
+<meta name="color-scheme" content="dark">
+<title>Home | MovieStream</title>
+<meta name="description" content="MovieStream: find something and press play. Trending movies, new releases, anime and top rated titles.">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<main id="main-content"><div class="container">
+  <div class="hero">
+    <h1>Your next favorite night in.</h1>
+    <p class="prompt">What do you want to watch?</p>
+    <div class="search-wrap">
+      <div class="search-field"><span aria-hidden="true">⌕</span><input id="search" type="text" placeholder="Search movies and shows…" role="combobox" aria-expanded="false" aria-controls="search-panel" autocomplete="off"></div>
+      <p class="helper" id="search-count" aria-live="polite"></p>
+      <div class="search-panel" id="search-panel" role="listbox" hidden></div>
+    </div>
+    <div class="quick-chips" id="quick-chips"></div>
+    <div id="share-home"></div>
+  </div>
+  <div id="home-rails"></div>
+</div></main>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+mountChrome("Home");
+document.getElementById("share-home").innerHTML = shareHTML(1282);
+document.getElementById("quick-chips").innerHTML =
+  ["Action","Comedy","Anime","Crime"].map(g=>`<a class="chip" href="genre.html?genre=${encodeURIComponent(g)}">${g}</a>`).join("") +
+  `<a class="chip" href="genres.html">More</a>`;
+
+// Spotlight data
+const spots=[
+  {t:CATALOG[0],badge:"Trending now"},{t:CATALOG[11],badge:"New Release"},
+  {t:CATALOG[3],badge:"Most Watched"},{t:CATALOG[8],badge:"New Series"}];
+let spotIx=0, timer=null;
+function spotHTML(){
+  return `<section class="block" aria-labelledby="spot-h"><div class="rail-head"><div><h2 id="spot-h">In the spotlight</h2><p class="sub">The titles people are pressing play on right now</p></div><a class="link-more" href="trending.html">Explore</a></div>
+  <div class="spot" id="spot" tabindex="0" aria-roledescription="carousel" aria-label="Spotlight">
+    ${spots.map((s,i)=>{const m=metaLine(s.t);return `<div class="spot-slide ${i===0?"active":""}" ${i===0?"":"hidden"} aria-label="${i+1} of 4"><div class="spot-bg"><img src="${backdrop(s.t)}" alt="" loading="${i===0?"eager":"lazy"}"></div>
+    <div class="spot-body"><span class="badge">${s.badge}</span><h3>${s.t.title}</h3>
+    <div class="spot-meta">\u2605 ${m.r} &bull; ${m.y} &bull; ${m.ty}</div>
+    <p class="spot-syn">${s.t.overview}</p>
+    <div class="spot-actions"><a class="btn btn-secondary" href="detail.html?id=${s.t.id}">Details</a><a class="btn btn-primary" href="watch.html?id=${s.t.id}">Watch</a></div></div></div>`;}).join("")}
+    <div class="spot-dots" role="tablist" aria-label="Choose feature">${spots.map((_,i)=>`<button role="tab" aria-selected="${i===0}" aria-label="Show ${i+1}" data-i="${i}"></button>`).join("")}</div>
+  </div></section>`;
+}
+function showSpot(i){
+  spotIx=(i+spots.length)%spots.length;
+  document.querySelectorAll(".spot-slide").forEach((s,k)=>{s.classList.toggle("active",k===spotIx);s.hidden=k!==spotIx;});
+  document.querySelectorAll(".spot-dots button").forEach((d,k)=>d.setAttribute("aria-selected",k===spotIx));
+}
+function auto(){clearInterval(timer);if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;timer=setInterval(()=>{if(document.hidden)return;showSpot(spotIx+1);},8000);}
+
+const list=getList();
+const rail=(id,title,href,items,sub)=>items.length?railHTML(id,title,href,items.slice(0,24),sub):"";
+document.getElementById("home-rails").innerHTML =
+  `<section class="block" aria-labelledby="mylist"><div class="rail-head"><div><h2 id="mylist">My List</h2></div><a class="link-more" href="watchlist.html">View more</a></div><div id="mylist-body"></div></section>`
+  + rail("tr","Trending now","trending.html",[...CATALOG].sort((a,b)=>b.pop-a.pop))
+  + rail("nr","New releases","movies.html?sort=newest",CATALOG.filter(t=>t.newRelease))
+  + rail("an","Popular anime","anime.html",CATALOG.filter(t=>t.anime))
+  + spotHTML()
+  + `<section class="block" aria-labelledby="coll"><div class="rail-head"><div><h2 id="coll">Collections</h2></div><a class="link-more" href="collections.html">View more</a></div><div class="coll-grid">${COLLECTIONS.slice(0,4).map(c=>{const art=CATALOG[(c.id*7)%CATALOG.length];return `<a class="coll-tile" href="collection.html?id=${c.id}"><img src="${backdrop(art,780)}" alt="${c.name} artwork" loading="lazy"><span class="cap"><b>${c.name}</b><span>${c.count} films</span></span></a>`;}).join("")}</div></section>`
+  + `<section class="block" aria-labelledby="prov"><div class="rail-head"><div><h2 id="prov">Streaming providers</h2><p class="sub">Pick a service and start browsing</p></div></div><div class="provider-row">${PROVIDERS.map(p=>`<a class="provider-tile" href="provider.html?slug=${p.slug}"><span class="mono" aria-hidden="true">${p.name.charAt(0)}</span>${p.name}</a>`).join("")}</div></section>`
+  + rail("pon","Popular on Netflix","provider.html?slug=netflix",CATALOG.filter(t=>t.provider==="netflix"))
+  + rail("pm","Popular movies","movies.html",CATALOG.filter(t=>t.type==="Movie"))
+  + rail("pt","Popular TV shows","tv.html",CATALOG.filter(t=>t.type==="TV"))
+  + rail("top","Top rated","trending.html?sort=rating",[...CATALOG].filter(t=>t.rating).sort((a,b)=>b.rating-a.rating));
+document.getElementById("mylist-body").innerHTML = list.length
+  ? `<div class="rail"><div class="rail-scroller">${list.map(id=>cardHTML(byId(id))).join("")}</div></div>`
+  : emptyBox("Save titles and they\u2019ll appear here.","trending.html","Browse trending");
+wireRails();
+
+// spotlight wiring
+document.querySelectorAll(".spot-dots button").forEach(d=>d.onclick=()=>{showSpot(Number(d.dataset.i));auto();});
+const spotEl=document.getElementById("spot");
+spotEl.addEventListener("pointerenter",()=>clearInterval(timer));
+spotEl.addEventListener("pointerleave",auto);
+spotEl.addEventListener("focusin",()=>clearInterval(timer));
+spotEl.addEventListener("focusout",auto);
+spotEl.addEventListener("touchstart",e=>{spotEl.dataset.x=e.touches[0].clientX;},{passive:true});
+spotEl.addEventListener("touchend",e=>{const dx=e.changedTouches[0].clientX-(Number(spotEl.dataset.x)||0);if(Math.abs(dx)>40)showSpot(spotIx+(dx<0?1:-1));auto();},{passive:true});
+auto();
+
+// search
+const inp=document.getElementById("search"), panel=document.getElementById("search-panel");
+function renderSearch(q){
+  const recent=store("recent")||[];
+  if(!q){panel.innerHTML=(recent.length?`<div class="lbl">Recent</div>`+recent.slice(0,5).map(r=>`<a class="row" href="detail.html?id=${r.id}">${r.title}</a>`).join(""):`<div class="lbl">Recent searches stay in this browser</div>`);return;}
+  const hits=CATALOG.filter(t=>t.title.toLowerCase().includes(q.toLowerCase())).slice(0,7);
+  document.getElementById("search-count").textContent=hits.length+" results";
+  panel.innerHTML=`<div class="lbl">Results — press Enter for all</div>`+(hits.map(t=>`<a class="row" role="option" href="detail.html?id=${t.id}"><img src="${poster(t)}" alt="" loading="lazy"><span><b>${t.title}</b><br><small style="color:var(--text-dim)">${t.year} &bull; ${t.type}</small></span></a>`).join("")||`<div class="lbl">No matches</div>`);
+}
+inp.addEventListener("focus",()=>{panel.hidden=false;inp.setAttribute("aria-expanded","true");renderSearch(inp.value);});
+inp.addEventListener("input",()=>renderSearch(inp.value));
+inp.addEventListener("keydown",e=>{if(e.key==="Enter"&&inp.value){const r=store("recent")||[];const hit=CATALOG.find(t=>t.title.toLowerCase().includes(inp.value.toLowerCase()));if(hit){store("recent",[{id:hit.id,title:hit.title},...r.filter(x=>x.id!==hit.id)].slice(0,8));}location.href="genres.html?q="+encodeURIComponent(inp.value);}});
+document.addEventListener("click",e=>{if(!e.target.closest(".search-wrap")){panel.hidden=true;inp.setAttribute("aria-expanded","false");}});
+if(location.hash==="#search")setTimeout(()=>inp.focus(),300);
+</script>
+</body>
+</html>

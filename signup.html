@@ -1,0 +1,42 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=overlays-content"><meta name="theme-color" content="#15171c"><meta name="color-scheme" content="dark"><title>Sign up | MovieStream</title><meta name="description" content="Create a MovieStream account. Save titles, keep history and comment under your own name."><link rel="stylesheet" href="css/styles.css"></head><body>
+<main id="main-content"><div class="container"><p style="margin-top:24px"><a class="link-more" href="index.html">&larr; Back to home</a></p>
+<div class="auth-page"><div class="auth-grid">
+<div class="auth-card" id="auth-card">
+<div id="auth-form">
+<p class="auth-steps" id="step-lbl">Step 1 of 2</p>
+<h1>Create your account.</h1>
+<p class="lead">Press play, save a title, or leave a comment. It shows up on every device.</p>
+<div id="step1">
+<div class="field"><label for="su-name">Username</label><input id="su-name" type="text" placeholder="Shown on comments" autocomplete="username" maxlength="24"><small>Shown on comments. 2 or more characters.</small></div>
+<div class="field"><label for="su-email">Email</label><input id="su-email" type="email" placeholder="you@example.com" autocomplete="email"><p class="field-error" id="err1" role="alert" aria-live="polite"></p></div>
+<p><button class="btn btn-primary btn-block" id="send-btn">Send code</button></p>
+</div>
+<div id="step2" hidden>
+<div class="field code-field"><label for="su-code">6-digit code</label><input id="su-code" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="••••••" maxlength="6" aria-describedby="code-hint"><p class="field-error" id="err2" role="alert" aria-live="polite"></p></div>
+<p class="helper" id="code-hint"></p>
+<p><button class="btn btn-primary btn-block" id="verify-btn">Verify and create account</button></p>
+<div class="resend-row"><button class="btn btn-ghost btn-sm" id="back-btn" type="button">&larr; Change details</button><button class="btn btn-ghost btn-sm" id="resend-btn" type="button">Resend code</button></div>
+</div>
+<p class="auth-switch">Have an account? <a href="login.html">Log in</a></p>
+<p class="auth-legal">By continuing you agree to the <a href="terms.html">Terms of use</a> and <a href="privacy.html">Privacy</a> policy.</p>
+</div>
+</div>
+<aside class="auth-side" aria-label="What you get">
+<div><h2>Your list, everywhere.</h2><p class="lead">One email. Watchlist, history and username on any device.</p></div>
+<div class="benefit"><span class="tick" aria-hidden="true">✓</span><div><b>Save in one tap</b><span>Titles you save appear under My Reelix.</span></div></div>
+<div class="benefit"><span class="tick" aria-hidden="true">✓</span><div><b>Pick up where you left off</b><span>History and recommendations as you watch.</span></div></div>
+<div class="benefit"><span class="tick" aria-hidden="true">✓</span><div><b>Comment as you</b><span>Your username shows beside your words.</span></div></div>
+</aside>
+</div></div>
+</div></main>
+<script src="js/data.js"></script><script src="js/app.js"></script><script src="js/auth.js"></script>
+<script>
+mountChrome("");
+if(!authSignedInBox("auth-card")){
+  const lbl=document.getElementById("step-lbl");
+  new MutationObserver(()=>{lbl.textContent=document.getElementById("step2").hidden?"Step 1 of 2":"Step 2 of 2";}).observe(document.getElementById("step2"),{attributes:true,attributeFilter:["hidden"]});
+  authWire({mode:"signup",userId:"su-name",emailId:"su-email",codeId:"su-code",step1:"step1",step2:"step2",err1:"err1",err2:"err2",sendBtn:"send-btn",verifyBtn:"verify-btn",resendBtn:"resend-btn",backBtn:"back-btn",codeHint:"code-hint"});
+  const nx=new URLSearchParams(location.search).get("next");
+  if(nx){document.querySelector(".auth-switch a").href="login.html?next="+encodeURIComponent(nx);}
+}
+</script></body></html>

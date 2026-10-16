@@ -1,0 +1,11 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=overlays-content"><meta name="theme-color" content="#15171c"><meta name="color-scheme" content="dark"><title>Provider | MovieStream</title><link rel="stylesheet" href="css/styles.css"></head><body>
+<main id="main-content"><div class="container"><h1 class="page-h1" id="h"></h1><p class="lead" id="s"></p>
+<nav class="sort-tabs" aria-label="Sort"><a data-sort="popular">Popular</a><a data-sort="newest">Newest</a><a data-sort="oldest">Oldest</a><a data-sort="rating">Top rated</a></nav>
+<div class="grid" id="grid"></div><nav class="pager" id="pager" aria-label="Pagination"></nav></div></main>
+<script src="js/data.js"></script><script src="js/app.js"></script>
+<script>mountChrome("");
+const slug=new URLSearchParams(location.search).get("slug")||"netflix";
+const p=PROVIDERS.find(x=>x.slug===slug)||PROVIDERS[0];
+document.getElementById("h").textContent=p.name;document.title=`${p.name} | MovieStream`;
+document.getElementById("s").textContent=`Movies and shows streaming on ${p.name}.`;
+runListing({filter:t=>t.provider===p.slug});</script></body></html>
